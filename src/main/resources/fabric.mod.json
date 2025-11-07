@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "name": "CirnoPatcher",
+  "name": "EntityCulling",
   "id": "meteor-client",
-  "version": "${version}",
-  "description": "Patches for vanilla minecraft because mojang is lazy !!",
+  "version": "1.9.3",
+  "description": "This mod uses async path-tracing to hide Tiles/Entities that are not visible.",
   "authors": [
     "capsoffpls"
   ],

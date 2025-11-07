@@ -5,36 +5,16 @@ import meteordevelopment.meteorclient.commands.Command;
 import meteordevelopment.meteorclient.utils.misc.PanicState;
 import net.minecraft.command.CommandSource;
 
-import java.io.IOException;
-import java.nio.file.*;
-import java.util.List;
-import java.util.stream.Collectors;
-
 public class PanicCommand extends Command {
     public PanicCommand() {
-        super("panic", "Usuwa wszystkie linie zawierające 'meteor' z logs/latest.log i ukrywa GUI Meteora.");
+        super("panic", "Włącza tryb panic. Czyszczenie logów nastąpi automatycznie w głównym wątku Meteora.");
     }
 
     @Override
     public void build(LiteralArgumentBuilder<CommandSource> builder) {
         builder.executes(context -> {
-            cleanLogs("meteor");
-            PanicState.setPanicMode(true); // <-- Tryb panic aktywowany
+            PanicState.setPanicMode(true); // <-- tutaj tylko ustawiamy flagę
             return SINGLE_SUCCESS;
         });
-    }
-
-    private void cleanLogs(String keyword) {
-        Path logPath = Paths.get("logs/latest.log");
-        try {
-            if (!Files.exists(logPath)) return;
-
-            List<String> lines = Files.readAllLines(logPath);
-            List<String> filtered = lines.stream()
-                    .filter(line -> !line.toLowerCase().contains(keyword.toLowerCase()))
-                    .collect(Collectors.toList());
-
-            Files.write(logPath, filtered, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
-        } catch (IOException ignored) {}
     }
 }

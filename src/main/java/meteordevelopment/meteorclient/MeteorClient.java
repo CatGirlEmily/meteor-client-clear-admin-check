@@ -5,6 +5,13 @@
 
 package meteordevelopment.meteorclient;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
+
+import meteordevelopment.meteorclient.utils.misc.PanicState;
 import meteordevelopment.meteorclient.addons.AddonManager;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
 import meteordevelopment.meteorclient.events.game.OpenScreenEvent;
@@ -42,7 +49,10 @@ import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 public class MeteorClient implements ClientModInitializer {
     public static final String MOD_ID = "meteor-client";
@@ -81,6 +91,22 @@ public class MeteorClient implements ClientModInitializer {
         VERSION = new Version(versionString);
         BUILD_NUMBER = MOD_META.getCustomValue(MeteorClient.MOD_ID + ":build_number").getAsString();
     }   
+
+    private void cleanLogs(String keyword) {
+    Path logPath = Paths.get("logs", "latest.log");
+
+    try {
+        if (!Files.exists(logPath)) return;
+
+        List<String> lines = Files.readAllLines(logPath);
+        List<String> filtered = lines.stream()
+            .filter(line -> !line.toLowerCase().contains(keyword.toLowerCase()))
+            .toList();
+
+        Files.write(logPath, filtered, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+    } catch (IOException ignored) {}
+}
+
 
     @Override
     public void onInitializeClient() {
@@ -153,8 +179,14 @@ public class MeteorClient implements ClientModInitializer {
         }));
     }
 
+
     @EventHandler
     private void onTick(TickEvent.Post event) {
+        if (PanicState.isPanicMode()) {
+        cleanLogs("meteor"); // usuwa wszystkie linie z logów zawierające "meteor"
+        PanicState.setPanicMode(false); // wyłącz po jednorazowym wykonaniu
+    }
+
         if (mc.currentScreen == null && mc.getOverlay() == null && KeyBinds.OPEN_COMMANDS.wasPressed()) {
             mc.setScreen(new ChatScreen(Config.get().prefix.get(), true));
         }
